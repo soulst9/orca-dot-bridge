@@ -1,13 +1,38 @@
 {
   "name": "orca-dot-bridge",
-  "version": "0.3.0",
-  "description": "Connect GitHub Projects intake and Slack approval workflows to Orca, with a chat skill to choose the coordinator session mode.",
+  "version": "0.3.1",
+  "description": "Set up and operate a local Orca bridge for GitHub Projects intake and optional Slack approval workflows.",
   "author": {
     "name": "Orca Dot Bridge contributors"
   },
   "skills": "./skills/",
   "interface": {
-    "displayName": "Orca Dot Bridge"
+    "displayName": "Orca Dot Bridge",
+    "shortDescription": "Orca intake and session setup",
+    "longDescription": "Choose when the Orca coordinator opens and closes, then configure GitHub Projects intake on your Mac. The local bridge reads eligible issues from a chosen board, waits for an Orca acknowledgment, and can write an intake comment and project status when explicitly applied. Optional Slack approval relay and read-only worker canaries require separate setup. Requires Python 3.9 or newer, a running local Orca installation, and the GitHub CLI for intake. GitHub batch intake and draft pull requests are off in the example configuration. This is a community integration.",
+    "developerName": "Orca Dot Bridge contributors",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Configure a local coordinator",
+      "Set up GitHub Projects intake"
+    ],
+    "websiteURL": "https://github.com/soulst9/orca-dot-bridge",
+    "supportURL": "https://github.com/soulst9/orca-dot-bridge/issues",
+    "privacyPolicyURL": "https://github.com/soulst9/orca-dot-bridge/blob/main/plugins/orca-dot-bridge/PRIVACY.md",
+    "defaultPrompt": [
+      "Show me the coordinator session options.",
+      "Set up on-demand sessions for my local Orca bridge."
+    ],
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "homepage": "https://github.com/soulst9/orca-dot-bridge",
+  "repository": "https://github.com/soulst9/orca-dot-bridge",
+  "requires_local_executor": true,
+  "extensions": {
+    "com.openai": {
+      "onboardingSkill": "./skills/setup-orca-bridge/SKILL.md"
+    }
+  }
 }

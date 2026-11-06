@@ -44,6 +44,12 @@ The setup skill offers **On demand** and **Keep the same session**. The default 
 
 See the [GitHub intake guide](plugins/orca-dot-bridge/docs/github-intake.md) for connection settings and the terminal setup command. The [bridge README](plugins/orca-dot-bridge/README.md) includes the Slack configuration and the CLI reference.
 
+## Local execution and data
+
+Orca Dot Bridge is a community integration for macOS. The setup skill invokes the bundled Python CLI to save the selected session mode. In a separately configured intake run, the CLI uses `gh` to query GitHub and `orca` to manage the configured project. It writes intake comments and project status only when the operator runs an apply command. The optional Slack relay uses Keychain credentials to call Slack and deliver a configured analysis request to a local Orca manager.
+
+GitHub batch intake and draft PR publishing are disabled in the example configuration. A worker canary is read-only. The bridge stores its configuration and processing state on the user's machine. See [privacy and data handling](plugins/orca-dot-bridge/PRIVACY.md).
+
 ## License
 
 [MIT](LICENSE)

@@ -1,4 +1,4 @@
-# orca-dot-bridge 0.3.0
+# orca-dot-bridge 0.3.1
 
 Dot의 판단을 Slack 스레드로 받아 기존 Orca Claude/Codex 관리자에게 **분석 데이터로 전달**하고,
 실제 수신 ACK를 확인한 뒤 Slack에 보고하는 배포용 패키지다.
@@ -14,12 +14,24 @@ Dot 예약 판단 ⇄ Slack 원본 스레드 ⇄ Orca Automation → 일회성 C
 초기 `enabled:false`이며 자동 Gate 해결·자동 취소·원자적 중복 방지·장애 자동 복구·강한 실행 권한 통제는
 모두 false다. 미검증 기능을 true로 바꾸면 CLI가 거부한다. 실행 기능은 이 릴리스에 포함하지 않는다.
 
+## Local execution and data
+
+Orca Dot Bridge is a community integration for macOS. The setup skill invokes the bundled Python CLI to save the selected session mode. In a separately configured intake run, the CLI uses `gh` to query GitHub and `orca` to manage the configured project. It writes intake comments and project status only when the operator runs an apply command. The optional Slack relay uses Keychain credentials to call Slack and deliver a configured analysis request to a local Orca manager.
+
+GitHub batch intake and draft PR publishing are disabled in the example configuration. A worker canary is read-only. The bridge stores its configuration and processing state on the user's machine. See [privacy and data handling](PRIVACY.md).
+
 ## 채팅에서 세션 설정
 
 [공개 GitHub 저장소의 설치 명령](https://github.com/soulst9/orca-dot-bridge#install-from-github)으로 Codex 또는 Claude Code에
 플러그인을 설치한다. Codex에서는 설치된 `setup-orca-bridge` 스킬을 선택하고, Claude Code에서는
 `/orca-dot-bridge:setup-orca-bridge`를 실행한다. 새 설치의 기본값은 필요할 때 열기다. 이 스킬은
 브리지 CLI로 로컬 설정을 저장한다. [GitHub 연결 및 터미널 설정 안내](docs/github-intake.md)를 참고한다.
+
+Claude Code에서는 아래 명령으로 GitHub 설치 소스에서 직접 설치할 수 있다.
+
+```text
+/plugin install orca-dot-bridge --marketplace soulst9/orca-dot-bridge
+```
 
 ## GitHub Projects 접수
 

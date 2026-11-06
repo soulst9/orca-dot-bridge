@@ -1,10 +1,16 @@
 {
   "name": "orca-dot-bridge",
-  "version": "0.3.0",
-  "description": "Connect GitHub Projects intake and Slack approval workflows to Orca, with a chat skill to choose the coordinator session mode.",
+  "version": "0.3.1",
+  "description": "Set up and operate a local Orca bridge for GitHub Projects intake and optional Slack approval workflows.",
   "displayName": "Orca Dot Bridge",
   "author": {
     "name": "Orca Dot Bridge contributors"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "homepage": "https://github.com/soulst9/orca-dot-bridge",
+  "repository": "https://github.com/soulst9/orca-dot-bridge",
+  "icon": "./assets/icon.png",
+  "documentationUrl": "https://github.com/soulst9/orca-dot-bridge#configure-the-bridge",
+  "supportUrl": "https://github.com/soulst9/orca-dot-bridge/issues",
+  "privacyPolicyUrl": "https://github.com/soulst9/orca-dot-bridge/blob/main/plugins/orca-dot-bridge/PRIVACY.md"
 }
