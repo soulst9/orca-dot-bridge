@@ -12,9 +12,10 @@
 
 ## 실행
 
-Cursor에 Agent Plugin을 설치했다면 채팅에서 `/setup-orca-bridge`로 관리자 세션 방식을
-선택할 수 있다. 기존 설정 파일이 여러 개라면 사용할 프로젝트의 경로를 지정한다. 터미널에서
-처음 설정할 때는 예제 설정을 복사한 다음 같은 선택을 한다.
+[공개 GitHub 저장소의 설치 명령](https://github.com/soulst9/orca-dot-bridge#install-from-github)으로 플러그인을 설치한 뒤
+Codex에서는 `setup-orca-bridge` 스킬을 선택하고, Claude Code에서는
+`/orca-dot-bridge:setup-orca-bridge`를 실행한다. 설정 파일이 여러 개라면 사용할 프로젝트의
+경로를 지정한다. 터미널에서 처음 설정할 때는 예제 설정을 복사한 다음 같은 선택을 한다.
 
 ```sh
 cp -n github-intake.example.json github-intake.json

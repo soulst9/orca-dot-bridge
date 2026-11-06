@@ -16,11 +16,10 @@ Dot 예약 판단 ⇄ Slack 원본 스레드 ⇄ Orca Automation → 일회성 C
 
 ## 채팅에서 세션 설정
 
-이 패키지는 루트의 `plugin.json`과 `skills/`로 구성된 Agent Plugin이기도 하다. Cursor에
-플러그인을 설치한 뒤 채팅에서 `/setup-orca-bridge`를 실행하면 관리자 세션 방식을 고를 수 있다.
-`/setup-orca-bridge persistent` 또는 `/setup-orca-bridge on-demand`로 바로 지정할 수도 있다.
-새 설치의 기본값은 필요할 때 열기다. 이 스킬은 브리지 CLI로 로컬 설정을 저장한다.
-[GitHub 연결 및 터미널 설치 안내](docs/github-intake.md)를 참고한다.
+[공개 GitHub 저장소의 설치 명령](https://github.com/soulst9/orca-dot-bridge#install-from-github)으로 Codex 또는 Claude Code에
+플러그인을 설치한다. Codex에서는 설치된 `setup-orca-bridge` 스킬을 선택하고, Claude Code에서는
+`/orca-dot-bridge:setup-orca-bridge`를 실행한다. 새 설치의 기본값은 필요할 때 열기다. 이 스킬은
+브리지 CLI로 로컬 설정을 저장한다. [GitHub 연결 및 터미널 설정 안내](docs/github-intake.md)를 참고한다.
 
 ## GitHub Projects 접수
 

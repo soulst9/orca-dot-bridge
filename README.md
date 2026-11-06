@@ -8,25 +8,35 @@ Run the bridge on a Mac with Python 3.9 or newer and a running Orca installation
 
 ## Install from GitHub
 
-Replace `OWNER/REPO` with the GitHub path of this marketplace repository.
+Install directly from this repository's marketplace. Add the source once, then install the plugin by name.
 
 **Codex**
 
 ```sh
-codex plugin marketplace add OWNER/REPO
+codex plugin marketplace add https://github.com/soulst9/orca-dot-bridge.git
 codex plugin add orca-dot-bridge@orca-dot-bridge
 ```
 
-Open the installed plugin's setup flow or select the `setup-orca-bridge` skill. [Codex plugin documentation](https://developers.openai.com/plugins/build/plugins)
+Select `setup-orca-bridge` from your installed skills to choose the coordinator session mode. [Codex plugin documentation](https://developers.openai.com/plugins/build/plugins)
 
 **Claude Code**
 
 ```sh
-claude plugin marketplace add OWNER/REPO
+claude plugin marketplace add https://github.com/soulst9/orca-dot-bridge.git
 claude plugin install orca-dot-bridge@orca-dot-bridge
 ```
 
 Run `/orca-dot-bridge:setup-orca-bridge` in Claude Code. [Claude Code marketplace documentation](https://code.claude.com/docs/en/plugin-marketplaces)
+
+**Standalone CLI**
+
+Clone the public repository and run the bundled CLI.
+
+```sh
+git clone https://github.com/soulst9/orca-dot-bridge.git
+cd orca-dot-bridge/plugins/orca-dot-bridge
+./bin/orca-dot-bridge --version
+```
 
 ## Configure the bridge
 
