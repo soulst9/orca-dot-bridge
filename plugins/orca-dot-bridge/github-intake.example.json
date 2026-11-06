@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "repository": "owner/repository",
+  "project_id": "PVT_REPLACE_ME",
+  "orca_repo_id": "replace-me",
+  "github_login": "replace-me",
+  "orca": {"executable": "auto"},
+  "coordinator_agent": "codex",
+  "base_ref": "origin/main",
+  "state_file": "/absolute/private/path/project-intake.json",
+  "ready_status": "Todo",
+  "received_status": "In Progress",
+  "intake_label": "orca-intake",
+  "issue_allowlist": [],
+  "batch_enabled": false,
+  "worker_mode": "off",
+  "worker_canaries": [],
+  "draft_pr_enabled": false,
+  "coordinator_auto_close": true
+}

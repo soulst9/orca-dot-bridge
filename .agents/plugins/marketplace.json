@@ -1,0 +1,20 @@
+{
+  "name": "orca-dot-bridge",
+  "interface": {
+    "displayName": "Orca Dot Bridge"
+  },
+  "plugins": [
+    {
+      "name": "orca-dot-bridge",
+      "source": {
+        "source": "local",
+        "path": "./plugins/orca-dot-bridge"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

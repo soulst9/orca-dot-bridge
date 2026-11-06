@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "enabled": false,
+  "features": {
+    "auto_gate_resolve": false,
+    "auto_task_cancel": false,
+    "atomic_deduplication": false,
+    "automatic_recovery": false,
+    "strong_execution_authorization": false
+  },
+  "state_file": "${BRIDGE_STATE_FILE}",
+  "orca": {"executable": "auto"},
+  "slack": {
+    "team_id": "${SLACK_TEAM_ID}",
+    "channel_id": "${SLACK_CHANNEL_ID}",
+    "bridge_user_id": "${SLACK_BRIDGE_USER_ID}",
+    "bridge_bot_id": "${SLACK_BRIDGE_BOT_ID}",
+    "dot_user_id": "${SLACK_DOT_USER_ID}",
+    "dot_bot_id": "${SLACK_DOT_BOT_ID}",
+    "approver_ids": ["${SLACK_APPROVER_ID}"],
+    "keychain_account": "${KEYCHAIN_ACCOUNT}",
+    "writer_service": "${SLACK_WRITER_KEYCHAIN_SERVICE}",
+    "reader_service": "${SLACK_READER_KEYCHAIN_SERVICE}"
+  },
+  "manager": {
+    "provider": "codex",
+    "run_id": "${ORCA_RUN_ID}",
+    "terminal_handle": "${ORCA_MANAGER_HANDLE}",
+    "worktree_path": "${ORCA_WORKTREE_PATH}"
+  },
+  "automation": {"name": "orca-dot-bridge", "trigger": "*/10 * * * *"},
+  "limits": {"page_limit": 15, "max_pages": 10, "lookback_seconds": 86400, "request_ttl_seconds": 3600}
+}

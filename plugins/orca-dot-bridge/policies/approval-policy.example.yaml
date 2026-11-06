@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "purpose": "운영 정책 예시. 이 파일은 CLI가 로드하는 정책 엔진이 아니다.",
+  "identity_source": "Slack 원본 API 응답과 config.slack.approver_ids",
+  "defaults": {
+    "execute": false,
+    "auto_gate_resolve": false,
+    "auto_task_cancel": false,
+    "atomic_deduplication": false,
+    "automatic_recovery": false,
+    "strong_execution_authorization": false
+  },
+  "approval": {
+    "approver_ids": ["${SLACK_APPROVER_ID}"],
+    "require_original_thread": true,
+    "bind": ["request_id", "nonce", "run_id", "task_id", "gate_id"],
+    "require_unedited_human_message": true,
+    "require_after_approval_request": true,
+    "require_before_expiry": true,
+    "multiple_or_conflicting_decisions": "hold_for_manual_review"
+  },
+  "decisions": {
+    "approve": "분석 의견 또는 사람 결정 식별만. execute:true도 자동 상태 변경 금지.",
+    "reject": "Gate 유지. 사람의 별도 수동 Task 취소 절차 검토. gate-resolve reject 금지.",
+    "needs_info": "Gate 유지. 추가 근거 요청.",
+    "human_required": "Gate 유지. 같은 Slack 스레드에 사람 검토 요청.",
+    "execute_false": "결정 종류에 관계없이 실제 상태 변경 금지."
+  },
+  "risk_examples": {
+    "low": ["실행 없이 읽기 전용 분석 의견", "상태 요약"],
+    "human_required": ["배포", "운영 데이터 변경 또는 삭제", "결제", "권한 또는 인증 변경"]
+  }
+}

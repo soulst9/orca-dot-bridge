@@ -1,0 +1,16 @@
+config.yaml
+*.local.yaml
+*.local.json
+*.env
+state/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+doctor.local.json
+
+github-intake.json
+backups/
+connection-check.txt
+.DS_Store

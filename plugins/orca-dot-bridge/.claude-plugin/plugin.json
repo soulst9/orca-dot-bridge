@@ -1,0 +1,10 @@
+{
+  "name": "orca-dot-bridge",
+  "version": "0.3.0",
+  "description": "Connect GitHub Projects intake and Slack approval workflows to Orca, with a chat skill to choose the coordinator session mode.",
+  "displayName": "Orca Dot Bridge",
+  "author": {
+    "name": "Orca Dot Bridge contributors"
+  },
+  "license": "MIT"
+}

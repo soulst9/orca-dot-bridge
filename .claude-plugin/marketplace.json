@@ -1,0 +1,14 @@
+{
+  "name": "orca-dot-bridge",
+  "owner": {
+    "name": "Orca Dot Bridge contributors"
+  },
+  "plugins": [
+    {
+      "name": "orca-dot-bridge",
+      "source": "./plugins/orca-dot-bridge",
+      "description": "Connect GitHub Projects intake and Slack approval workflows to Orca, with a chat skill to choose the coordinator session mode."
+    }
+  ],
+  "description": "Install the Orca Dot Bridge and its coordinator setup skill."
+}

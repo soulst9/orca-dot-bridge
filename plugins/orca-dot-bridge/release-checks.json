@@ -1,0 +1,109 @@
+{
+  "package": "orca-dot-bridge",
+  "version": "0.1.2",
+  "checked_date": "2026-11-06",
+  "unit_tests": {
+    "framework": "unittest",
+    "count": 46,
+    "result": "passed",
+    "external_services": "mocked"
+  },
+  "skills": {
+    "dot_manager": "frontmatter unchanged from validated 0.1.0",
+    "orca_coordinator": "frontmatter unchanged from validated 0.1.0"
+  },
+  "installed_orca_help_check": {
+    "executable": "/usr/local/bin/orca",
+    "version": "1.4.250",
+    "guides_available": {
+      "orca-cli": true,
+      "orchestration": true
+    },
+    "commands": {
+      "automations create": {
+        "supported": true,
+        "missing_flags": []
+      },
+      "automations edit": {
+        "supported": true,
+        "missing_flags": []
+      },
+      "automations run": {
+        "supported": true,
+        "missing_flags": []
+      },
+      "automations runs": {
+        "supported": true,
+        "missing_flags": []
+      },
+      "terminal show": {
+        "supported": true,
+        "missing_flags": []
+      },
+      "terminal read": {
+        "supported": true,
+        "missing_flags": []
+      },
+      "terminal send": {
+        "supported": true,
+        "missing_flags": []
+      },
+      "orchestration gate-list": {
+        "supported": true,
+        "missing_flags": []
+      },
+      "orchestration task-list": {
+        "supported": true,
+        "missing_flags": []
+      },
+      "orchestration worker-list": {
+        "supported": true,
+        "missing_flags": []
+      },
+      "orchestration dispatch-show": {
+        "supported": true,
+        "missing_flags": []
+      },
+      "orchestration gate-resolve": {
+        "supported": true,
+        "missing_flags": []
+      },
+      "orchestration task-update": {
+        "supported": true,
+        "missing_flags": []
+      }
+    },
+    "compatible": true,
+    "live_semantics_verified": false,
+    "python_version": "3.9.6",
+    "keychain_available": true,
+    "config_valid": true,
+    "enabled": true,
+    "online_checks": "auth_history_manager_passed",
+    "thread_read_verified": true
+  },
+  "live_connection_checks": {
+    "existing_keychain_slack_auth": "passed",
+    "channel_and_thread_read": "passed",
+    "canary_post": "passed",
+    "dot_v1_task_migration": "reported saved; v1 reply verified",
+    "full_v1_roundtrip": "RECEIVED_CONFIRMED",
+    "sequential_duplicate_check": "DUPLICATE_SKIPPED",
+    "orca_automation_manual_run": "completed; no pending requests",
+    "orca_ten_minute_schedule": "enabled; future next run verified",
+    "gate_task_status_preserved": true
+  },
+  "distribution_checks": {
+    "python_source_syntax": "passed",
+    "relative_document_links": "passed",
+    "default_features_disabled": true,
+    "embedded_sensitive_values_scan": "passed"
+  },
+  "guarantees": {
+    "automatic_gate_resolution": false,
+    "automatic_task_cancellation": false,
+    "atomic_deduplication": false,
+    "automatic_recovery": false,
+    "strong_execution_authorization": false
+  }
+}

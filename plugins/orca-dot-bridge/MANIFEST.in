@@ -1,0 +1,8 @@
+include LICENSE .claude-plugin/plugin.json .codex-plugin/plugin.json README.md plugin.json config.example.yaml github-intake.example.json release-checks.json
+recursive-include docs *.md
+recursive-include skills *.md
+recursive-include policies *.yaml
+recursive-include automations *.txt
+recursive-include bin *
+recursive-include scripts *.py
+recursive-include tests *.py
