@@ -72,11 +72,10 @@ cp -n github-intake.example.json github-intake.json
 같은 Orca 호스트에서 `orca terminal list --worktree id:WORKTREE --json`으로 그 전용
 Worktree만 검사한다. 이미 기록된 pane이 있으면 그 세션을 복구하고 다시 실행한다.
 
-`launch`는 있는데 handle과 pane이 없다면 시작 요청의 결과부터 확인한다. 원래 명령의
-`operationId`가 있으면 Orca CLI의 `--retry-launch`로 같은 명령을 재조회한다. 이미 시작된
-관리자가 하나 있으면 다음 접수 회차가 해당 세션을 확인해 연결한다. 실행이 발생하지 않았고
-나중에 실행될 요청도 없다는 사실을 확인한 경우에만 아래처럼 같은 전용 Worktree에서
-설정의 관리자 종류로 터미널을 하나 시작한 뒤 접수를 재실행한다.
+`launch`는 있는데 handle과 pane이 없다면 상태에는 시작 시도만 기록된 것이다. 전용
+Worktree에서 이미 시작된 관리자가 하나 확인되면 다음 접수 회차가 해당 세션을 확인해 연결한다.
+실행이 발생하지 않았고 나중에 실행될 요청도 없다는 사실을 확인한 경우에만 아래처럼 같은
+전용 Worktree에서 설정의 관리자 종류로 터미널을 하나 시작한 뒤 접수를 재실행한다.
 
 ```sh
 orca agent launch --agent AGENT --worktree id:WORKTREE --surface terminal --json
