@@ -32,7 +32,7 @@
       "onboardingSkill": "./skills/setup-orca-bridge/SKILL.md",
       "requires_local_executor": true,
       "publication": {
-        "release_notes": "Returns structured CLI errors for malformed Orca responses in Slack workflows."
+        "release_notes": "Separates send checks from the journal, pages terminal acknowledgments, checks GitHub intake capabilities, exposes a single setup skill, and returns structured CLI errors for malformed bridge state and Orca responses."
       }
     }
   },
