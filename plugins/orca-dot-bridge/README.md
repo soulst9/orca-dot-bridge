@@ -196,12 +196,12 @@ Slack [rate limit](https://docs.slack.dev/apis/web-api/rate-limits/)은 앱 배�
 
 ## 파일
 
-- `skills/`: Dot Manager / Orca Coordinator
+- `skills/setup-orca-bridge/`: 채팅에서 관리자 세션 방식을 저장하는 설치 스킬
 - `orca_dot_bridge/`, `bin/`: Keychain·Slack 인증/전송·판단 검증·단일 회차 처리
 - `config.example.yaml`, `policies/`: 배포용 변수와 승인 정책 예시
 - `automations/`, `orca_dot_bridge/automation_prompt.txt`: 예약 프롬프트
 - `scripts/check_install.py`, `tests/`: 설치·호환성 점검과 모의 테스트
-- `docs/`: 프로토콜, 운영, 수동 Gate 처리, 검증 기록
+- `docs/`: 프로토콜, 운영, 수동 Gate 처리, 검증 기록, GitHub 접수 안내, Dot 관리자·Orca 관리자 지침
 
 압축 배포물에는 실제 토큰·사용자 ID·Run/Task/Gate ID·터미널 핸들·프로젝트 경로를 넣지 않는다.
 테스트 식별자는 생성된 가상 값이다. 로컬 config·상태·온라인 점검 로그는 재배포하지 않는다.
