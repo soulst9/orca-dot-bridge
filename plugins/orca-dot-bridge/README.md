@@ -1,4 +1,4 @@
-# orca-dot-bridge 0.3.2
+# orca-dot-bridge 0.3.3
 
 Dot의 판단을 Slack 스레드로 받아 기존 Orca Claude/Codex 관리자에게 **분석 데이터로 전달**하고,
 실제 수신 ACK를 확인한 뒤 Slack에 보고하는 배포용 패키지다.

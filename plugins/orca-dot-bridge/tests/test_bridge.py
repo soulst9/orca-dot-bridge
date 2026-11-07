@@ -555,6 +555,29 @@ class CompatAndOrcaTests(unittest.TestCase):
             "ok": False, "error": "state_invalid:manual_reconciliation_required"})
         self.assertEqual(state_path.read_text(), "[]")
 
+    def test_slack_doctor_returns_json_for_non_object_orca_result(self):
+        for result, field in (([], "result"), ({"terminal": None}, "terminal")):
+            with self.subTest(field=field):
+                response = json.dumps({"ok": True, "result": result})
+                orca = b.Orca(self.c, runner=lambda _: response)
+                with patch("orca_dot_bridge.cli.load_config", return_value=self.c), \
+                        patch("orca_dot_bridge.cli.check", return_value={"compatible": True}), \
+                        patch("orca_dot_bridge.cli.Slack"), \
+                        patch("orca_dot_bridge.cli.Orca", return_value=orca), \
+                        patch("sys.stdout", new_callable=io.StringIO) as stdout:
+                    self.assertEqual(main(["doctor", "--online"]), 2)
+                self.assertEqual(json.loads(stdout.getvalue()), {
+                    "ok": False, "error": "orca_response_invalid:" + field})
+
+    def test_cli_returns_safe_json_for_unhandled_attribute_error(self):
+        with patch("orca_dot_bridge.cli.load_config", return_value=self.c), \
+                patch("orca_dot_bridge.cli.check", return_value={"compatible": True}), \
+                patch("orca_dot_bridge.cli.tick", side_effect=AttributeError("SYNTHETIC_SECRET")), \
+                patch("sys.stdout", new_callable=io.StringIO) as stdout:
+            self.assertEqual(main(["tick"]), 2)
+        self.assertEqual(json.loads(stdout.getvalue()), {
+            "ok": False, "error": "invalid_local_file_or_unsupported_response_shape"})
+
     def test_keychain_password_is_not_a_command_argument(self):
         with patch("orca_dot_bridge.cli.load_config", return_value=self.c), \
              patch("orca_dot_bridge.cli.sys.platform", "darwin"), \

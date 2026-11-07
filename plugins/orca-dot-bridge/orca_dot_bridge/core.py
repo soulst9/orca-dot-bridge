@@ -428,11 +428,17 @@ class Orca:
         r = strict_json(self.runner([self.exe] + args + ["--json"]))
         if not isinstance(r, dict) or r.get("ok") is not True:
             raise BridgeError("orca_error:inspect_locally_no_automatic_retry")
+        result = r.get("result")
+        if not isinstance(result, dict):
+            raise BridgeError("orca_response_invalid:result")
+        if (args[:2] in (["terminal", "show"], ["terminal", "read"])
+                and not isinstance(result.get("terminal"), dict)):
+            raise BridgeError("orca_response_invalid:terminal")
         return r
 
     def manager(self):
         r = self.command(["terminal", "show", "--terminal", self.c["manager"]["terminal_handle"]])
-        t = r.get("result", {}).get("terminal", {})
+        t = r["result"]["terminal"]
         m = self.c["manager"]
         if (t.get("handle") != m["terminal_handle"] or t.get("connected") is not True
                 or t.get("agentIdentity") != m["provider"] or t.get("worktreePath") != m["worktree_path"]):

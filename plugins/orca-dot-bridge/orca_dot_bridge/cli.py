@@ -124,7 +124,7 @@ def main(argv=None):
     except BridgeError as e:
         output({"ok": False, "error": str(e)})
         return 2
-    except (OSError, KeyError, TypeError, ValueError):
+    except (OSError, KeyError, TypeError, ValueError, AttributeError):
         # Do not leak token-bearing stack traces or subprocess diagnostics.
         output({"ok": False, "error": "invalid_local_file_or_unsupported_response_shape"})
         return 2

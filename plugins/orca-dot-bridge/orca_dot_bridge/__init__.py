@@ -1,2 +1,2 @@
 """One-shot Dot / Slack and GitHub Projects bridge."""
-__version__ = "0.3.2"
+__version__ = "0.3.3"
