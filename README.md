@@ -52,6 +52,10 @@ Orca Dot Bridge is a community integration for macOS. The setup skill invokes th
 
 GitHub batch intake and draft PR publishing are disabled in the example configuration. A worker canary is read-only. The bridge stores its configuration and processing state on the user's machine. See [privacy and data handling](plugins/orca-dot-bridge/PRIVACY.md).
 
+## Deploying this for a team
+
+Need help setting up the bridge for your team, or a variant that fits your workflow? Open an [issue](https://github.com/soulst9/orca-dot-bridge/issues). Feedback on what you would want next is welcome.
+
 ## License
 
 [MIT](LICENSE)

@@ -205,3 +205,7 @@ Slack [rate limit](https://docs.slack.dev/apis/web-api/rate-limits/)은 앱 배�
 
 압축 배포물에는 실제 토큰·사용자 ID·Run/Task/Gate ID·터미널 핸들·프로젝트 경로를 넣지 않는다.
 테스트 식별자는 생성된 가상 값이다. 로컬 config·상태·온라인 점검 로그는 재배포하지 않는다.
+
+## 팀 도입 문의
+
+팀 환경에 맞춘 설치·설정 지원이나 워크플로에 맞는 변형이 필요하면 [GitHub Issues](https://github.com/soulst9/orca-dot-bridge/issues)로 문의한다. 다음에 필요한 기능에 대한 의견도 환영한다.
