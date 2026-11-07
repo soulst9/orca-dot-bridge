@@ -90,7 +90,7 @@ def draft_pr(c, gh, orca, state, issue, work):
         raise BridgeError("worker_pull_request_binding_changed")
     work["pr"] = pr["html_url"]
     state.save()
-    synced_comment(gh, state, work, "pull-request", issue, "Orca 작업 PR · " + work["pr"])
+    synced_comment(gh, state, work, "pull-request", issue, "Orca pull request · " + work["pr"])
     return work["pr"]
 
 
@@ -171,8 +171,8 @@ def work_issue(c, gh, orca, state, item, entry):
     if task["status"] not in ("completed", "failed", "blocked"):
         return {"status": "worker_running", "task": task["id"], "dispatch": dispatch_id}
     had_comment = bool(work.get(task["status"] + "_url"))
-    message = {"completed": "완료", "failed": "실패", "blocked": "보류"}[task["status"]]
-    synced_comment(gh, state, work, task["status"], issue, f"Orca Worker 작업 {message} · `{task['id']}`")
+    synced_comment(gh, state, work, task["status"], issue,
+                   f"Orca worker {task['status']} · `{task['id']}`")
     if task["status"] == "completed":
         had_pr = bool(work.get("pull-request_url"))
         pr = draft_pr(c, gh, orca, state, issue, work)

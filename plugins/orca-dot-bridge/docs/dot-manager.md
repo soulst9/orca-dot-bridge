@@ -1,13 +1,8 @@
----
-name: dot-manager
-description: Dot에서 orca-dot-bridge 요청을 읽고 분석 판단과 사람 검토 필요 여부를 같은 Slack 스레드에 기록한다. Orca 작업 실행이나 Gate 해결에는 사용하지 않는다.
----
-
 # Dot Manager
 
 설치자가 지정한 Slack workspace/channel과 Bridge 작성자 ID만 사용한다.
-설정은 패키지의 [config.example.yaml](../../config.example.yaml), 입력 규약은
-[protocol.md](../../docs/protocol.md), 권한 범위는 [approval-policy.example.yaml](../../policies/approval-policy.example.yaml)을 참조한다.
+설정은 패키지의 [config.example.yaml](../config.example.yaml), 입력 규약은
+[protocol.md](protocol.md), 권한 범위는 [approval-policy.example.yaml](../policies/approval-policy.example.yaml)을 참조한다.
 실제 토큰과 프로젝트 핸들을 이 Skill에 기록하지 않는다.
 
 ## 판단 회차

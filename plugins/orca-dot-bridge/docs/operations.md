@@ -43,6 +43,18 @@ page budget을 넘기면 해당 읽기는 실패다. 이전 스레드에서 이�
 
 ## 관리자 종료·Orca 재시작
 
+`manager_has_draft:no_input_sent`가 나오면 관리자에게 초안을 처리하게 한 뒤 다음 회차를
+실행한다. 전송 전에 실패한 이 검사는 0.3.2부터 manager 영수증을 생성하지 않는다.
+`ack_output_incomplete:manual_reconciliation_required`는 전송 이후 출력 기록을 끝까지
+확인하지 못했다는 뜻이다. 관리자 출력과 실행 기록을 직접 대조한다.
+
+0.3.1 이하에서 같은 초안 오류가 이미 `uncertain_effect`를 남겼다면 예약 실행을 중지하고
+진행 중인 회차가 없는지 확인한다. 정확한 요청의 첫 실행 로그가 `manager_has_draft:no_input_sent`를
+보여주고 다른 전송 시도가 없었다는 사실이 확인된 경우에만, 상태 파일을 권한 0600으로
+백업한 뒤 `effects`에서 그 요청의 `team:channel:thread_ts:nonce:manager` 항목 하나를 제거한다.
+JSON 형식과 권한을 확인하고 읽기 전용 회차부터 재개한다. 전송 여부를 확정할 수 없는 경우에는
+원본 영수증을 유지하고 위 수동 대조 절차를 따른다.
+
 terminal_handle_stale이면 이름이나 제목으로 새 핸들을 추측하지 않는다.
 선택한 같은 실행 파일/호스트의 terminal list에서 전체 핸들을 다시 찾고 설치자가 실제 관리자를 확인한다.
 원래 Run, provider, worktree 경로도 다시 확인한 뒤 config를 갱신한다.

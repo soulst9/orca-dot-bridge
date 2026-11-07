@@ -9,7 +9,7 @@ import urllib.error
 from pathlib import Path
 from unittest.mock import patch
 from orca_dot_bridge import core as b
-from orca_dot_bridge.compat import REQUIRED, automation_plan, check
+from orca_dot_bridge.compat import REQUIRED, SLACK_COMMANDS, automation_plan, check
 from orca_dot_bridge.cli import main
 
 
@@ -67,6 +67,8 @@ class FakeSlack:
 class FakeOrca:
     def __init__(self):
         self.deliveries, self.ack = [], True
+    def prepare_delivery(self, q, d):
+        return q, d
     def deliver(self, q, d):
         self.deliveries.append((q, d))
         return {"cursor": 1, "runtime_id": "TEST_RUNTIME"}
@@ -85,6 +87,37 @@ class BridgeTests(unittest.TestCase):
 
     def pump(self, dry=False):
         return b.tick(self.c, self.slack, self.orca, NOW, dry)[0]["status"]
+
+    def test_preflight_draft_can_clear_without_poisoning_the_journal(self):
+        with patch.object(self.orca, "prepare_delivery",
+                          side_effect=b.BridgeError("manager_has_draft:no_input_sent")):
+            with self.assertRaisesRegex(b.BridgeError, "manager_has_draft"):
+                self.pump()
+        self.assertFalse(Path(self.c["state_file"]).exists())
+        self.assertFalse(self.orca.deliveries)
+        self.assertEqual(self.pump(), "RECEIVED_CONFIRMED")
+        self.assertEqual(len(self.orca.deliveries), 1)
+
+    def test_incomplete_ack_stops_tick_without_repeating_the_send(self):
+        with patch.object(self.orca, "confirm", side_effect=b.BridgeError(
+                "ack_output_incomplete:manual_reconciliation_required")):
+            with self.assertRaisesRegex(b.BridgeError, "ack_output_incomplete"):
+                self.pump()
+        with patch.object(self.orca, "prepare_delivery", side_effect=AssertionError("preflight replayed")):
+            self.assertEqual(self.pump(), "RECEIVED_CONFIRMED")
+        self.assertEqual(len(self.orca.deliveries), 1)
+
+    def test_unrelated_dot_thread_message_is_not_a_decision(self):
+        self.slack.thread += [dict(self.reply, text="Reviewing the issue"),
+                              dict(self.reply, text='{"progress":"read"}')]
+        self.assertEqual(self.pump(), "RECEIVED_CONFIRMED")
+
+    def test_empty_environment_value_is_only_allowed_for_optional_dot_bot(self):
+        with patch.dict(os.environ, {"TEST_EMPTY": ""}):
+            self.assertEqual(b.expand({"slack": {"dot_bot_id": "${TEST_EMPTY}"}}),
+                             {"slack": {"dot_bot_id": ""}})
+            with self.assertRaisesRegex(b.BridgeError, "missing_environment_variable"):
+                b.expand({"slack": {"dot_user_id": "${TEST_EMPTY}"}})
 
     def human(self, decision="reject", execute=False):
         value = {k: self.q[k] for k in b.BIND}
@@ -405,6 +438,15 @@ class CompatAndOrcaTests(unittest.TestCase):
             return value.replace("  --cursor <value>", "Example: unsupported --cursor")
         self.assertFalse(check(self.c, fake)["compatible"])
 
+    def test_slack_probe_never_probes_automation_or_gate_mutations(self):
+        seen = []
+        def runner(args):
+            if args[-1] == "--help" and len(args) > 2:
+                seen.append(" ".join(args[1:-1]))
+            return self.help_runner(args)
+        self.assertTrue(check(self.c, runner, commands=SLACK_COMMANDS, include_guides=False)["compatible"])
+        self.assertEqual(set(seen), {"terminal read", "terminal send", "terminal show"})
+
     def test_executable_selection_does_not_shell_split_or_fallback(self):
         with patch.dict(os.environ, {"ORCA_CLI_COMMAND": "/tmp/one executable"}, clear=True):
             self.assertEqual(b.orca_executable(self.c), "/tmp/one executable")
@@ -427,7 +469,7 @@ class CompatAndOrcaTests(unittest.TestCase):
                 result = {"accepted": True}
             return json.dumps({"ok": True, "result": result, "_meta": {"runtimeId": "SYNTHETIC_RUNTIME"}})
         orca = b.Orca(self.c, runner)
-        receipt = orca.deliver(q, d)
+        receipt = orca.deliver(*orca.prepare_delivery(q, d))
         self.assertTrue(orca.confirm(q, receipt))
         self.assertTrue(all(args[1] == "terminal" for args in calls))
         self.assertNotIn("gate-resolve", str(calls))
@@ -447,8 +489,34 @@ class CompatAndOrcaTests(unittest.TestCase):
                 result = {"terminal": {"source": "screen", "draft": "unsent user input"}}
             return json.dumps({"ok": True, "result": result, "_meta": {"runtimeId": "SYNTHETIC_RUNTIME"}})
         with self.assertRaisesRegex(b.BridgeError, "manager_has_draft"):
-            b.Orca(self.c, runner).deliver(q, d)
+            b.Orca(self.c, runner).prepare_delivery(q, d)
         self.assertFalse(any(args[1:3] == ["terminal", "send"] for args in calls))
+
+    def test_ack_split_between_cursor_pages_is_detected(self):
+        root, _, _, _ = fixture(self.c)
+        ack = {k: root[k] for k in b.BIND}
+        ack.update(status="RECEIVED_CONFIRMED", execute=False)
+        prefix = b.ACK + " " + json.dumps(ack)
+        orca = b.Orca(self.c)
+        pages = [
+            {"tail": ["noise"] * 999 + [prefix[:70]], "limited": True,
+             "nextCursor": 1001, "latestCursor": 1002},
+            {"tail": [prefix[70:]], "limited": False, "nextCursor": 1002},
+        ]
+        with patch.object(orca, "manager", return_value="runtime"), \
+                patch.object(orca, "read", side_effect=pages) as read:
+            self.assertTrue(orca.confirm(root, {"cursor": 1, "runtime_id": "runtime"}))
+        self.assertEqual([call.args[0] for call in read.call_args_list], [1, 1001])
+
+    def test_nonadvancing_ack_cursor_fails_instead_of_repeating_page(self):
+        root, _, _, _ = fixture(self.c)
+        orca = b.Orca(self.c)
+        with patch.object(orca, "manager", return_value="runtime"), \
+                patch.object(orca, "read", return_value={"tail": [], "limited": True, "nextCursor": 1}) as read, \
+                patch.object(orca, "command", return_value={"result": {"terminal": {"source": "screen"}}}):
+            with self.assertRaisesRegex(b.BridgeError, "ack_output_incomplete"):
+                orca.confirm(root, {"cursor": 1, "runtime_id": "runtime"})
+        read.assert_called_once_with(1)
 
     def test_bulleted_hard_wrapped_ack_preserves_exact_binding(self):
         q, _, _, _ = fixture(self.c)

@@ -8,7 +8,7 @@ from pathlib import Path
 from . import __version__
 from .core import (BridgeError, DISABLED, Journal, Orca, REQ, Slack, encode, load_config,
                    new_request, tick, timestamp)
-from .compat import automation_plan, check
+from .compat import SLACK_COMMANDS, automation_plan, check
 from . import intake
 
 
@@ -117,7 +117,7 @@ def main(argv=None):
             output({"ok": True, "messages": slack.messages(thread=args.thread_ts)})
         elif args.command == "tick":
             # Probe exact installed command capabilities every run before possible input delivery.
-            if not check(c)["compatible"]:
+            if not check(c, commands=SLACK_COMMANDS, include_guides=False)["compatible"]:
                 raise BridgeError("orca_cli_incompatible")
             output({"ok": True, "results": tick(c, dry_run=args.dry_run)})
         return 0

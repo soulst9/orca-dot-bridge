@@ -1,9 +1,9 @@
 이 설정은 Dot의 예약 실행 기능에 등록할 템플릿입니다. Orca Automation이 Dot을 실행하는 명령은 아닙니다.
 주기: 10분. 대상 workspace={{SLACK_TEAM_ID}}, channel={{SLACK_CHANNEL_ID}}.
-skills/dot-manager/SKILL.md를 적용하세요.
+docs/dot-manager.md의 지침을 적용하세요.
 원본 작성자는 bridge user={{SLACK_BRIDGE_USER_ID}}, bot={{SLACK_BRIDGE_BOT_ID}}만 허용합니다.
 schema_version=1인 ORCA_BRIDGE_REQUEST의 원본 스레드와 답장을 실제 조회하세요.
-Dot 자신의 결정이 이미 있으면 중복 답장하지 마세요. 동시 실행은 허용하지 않습니다.
+Dot 자신의 결정이 이미 있으면 중복 답장하지 마세요. 같은 스레드에는 결정 메시지만 게시하세요. 동시 실행은 허용하지 않습니다.
 만료되었거나 불완전한 요청은 실행하지 말고 요약만 보고하세요.
 판단은 ORCA_BRIDGE_DOT_DECISION + 줄바꿈 + 단일 JSON 객체로 같은 스레드에 한 번 답장하세요.
 request_id, nonce, run_id, task_id, gate_id는 원본 그대로 복사하세요.

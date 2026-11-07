@@ -1,4 +1,4 @@
-# orca-dot-bridge 0.3.1
+# orca-dot-bridge 0.3.2
 
 Dot의 판단을 Slack 스레드로 받아 기존 Orca Claude/Codex 관리자에게 **분석 데이터로 전달**하고,
 실제 수신 ACK를 확인한 뒤 Slack에 보고하는 배포용 패키지다.
@@ -56,6 +56,11 @@ GitHub 접수 설치 시 `github-intake-setup`에서 관리자 세션 방식을 
 | 원자적 중복 방지·장애 복구·강한 권한 강제 | 미검증 | 비활성·보장하지 않음 |
 
 이전 TEST-* 결과는 패키지 제작 전 현장 관찰이며, 새 v1 패키지의 설치 점검과 구분한다.
+
+GitHub Projects 현장 점검에서는 이슈 두 건을 같은 전용 관리자 세션으로 접수하고,
+읽기 전용 Worker 결과를 GitHub에 남겼다. 다음 이슈가 남아 있으면 세션을 유지했고,
+마지막 GitHub 반영 후 닫았다. 동일 요청 재실행에서 코멘트가 중복되지 않았다.
+[검증 범위](docs/validation.md)를 참고한다.
 v1 규약의 nonce·만료·검증 절차는 모의 테스트와 별도의 실제 왕복 점검으로 확인했다.
 이전 `ORCA_BRIDGE_TEST`/TEST-* 메시지를 자동 이관하거나 재처리하지 않는다.
 자세한 근거와 제한은 [validation.md](docs/validation.md)에 있다.
@@ -81,7 +86,8 @@ python3 -m unittest discover -s tests -v
 예제는 JSON 표기의 YAML 1.2다. 의존성 없이 읽기 위해 JSON 문법을 유지한다. 일반 YAML 문법·주석은 지원하지 않는다.
 
 - Slack: team/channel, Bridge bot의 user+bot ID, Dot user+bot ID, 사람 approver ID 목록.
-  Dot이 bot_id 없는 연결이라면 dot_bot_id를 빈 문자열로 직접 설정한다.
+  예제의 `dot_bot_id`는 빈 값이다. Slack 원본에 Dot의 bot ID가 있으면 검증에 사용할 실제 ID나
+  `${SLACK_DOT_BOT_ID}`를 지정한다.
 - Keychain: account, writer_service, reader_service. 토큰 값은 config에 넣지 않는다.
 - 관리자: provider를 `codex` 또는 `claude`로 설정하고 현재 Run ID, 전체 terminal handle, 절대 worktree 경로를 채운다.
   제목·이름·짧은 핸들로 추측하지 않는다. 채팅 전용 관리자는 현재 터미널 전송 경로의 대상이 아니다.
@@ -90,7 +96,10 @@ python3 -m unittest discover -s tests -v
 
 현재 핸들과 Run은 선택한 Orca의 `terminal list --json`, `orchestration run-list --json`으로 찾고
 설치자가 관리자의 실제 소속을 확인한다. Run이 없다면 설치된 orchestration Skill의 생성 절차를 따른다.
-Skill은 `skills/dot-manager/SKILL.md`와 `skills/orca-coordinator/SKILL.md`를 각각 해당 에이전트에 등록/첨부한다.
+Dot 예약 작업에는 [Dot 관리자 지침](docs/dot-manager.md)을, Orca 관리자에는
+[Orca 관리자 지침](docs/orca-coordinator.md)을 각각 첨부한다. 플러그인에서 실행하는 스킬은
+`setup-orca-bridge`다.
+이전 예약 프롬프트가 `skills/dot-manager/SKILL.md`를 참조하면 새 문서 경로로 교체한다.
 Dot의 Skill 설치·스케줄을 자동 생성하는 API는 이 패키지에서 가정하지 않는다.
 
 ## Slack 최소권한과 Keychain

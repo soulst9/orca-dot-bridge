@@ -28,6 +28,8 @@ claude plugin install orca-dot-bridge@orca-dot-bridge
 
 Run `/orca-dot-bridge:setup-orca-bridge` in Claude Code. [Claude Code marketplace documentation](https://code.claude.com/docs/en/plugin-marketplaces)
 
+The Claude package targets local Claude Code on macOS and includes its CLI in `bin/`.
+
 **Standalone CLI**
 
 Clone the public repository and run the bundled CLI.

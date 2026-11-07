@@ -7,39 +7,67 @@ from pathlib import Path
 from .core import BridgeError, Orca, orca_executable, run
 
 
-REQUIRED = {
-    "automations create": ("--name", "--trigger", "--prompt", "--provider", "--workspace", "--disabled", "--json"),
-    "automations edit": ("--id", "--disabled", "--enabled", "--json"),
-    "automations run": ("--id", "--json"),
-    "automations runs": ("--id", "--limit", "--json"),
+SLACK_COMMANDS = {
     "terminal show": ("--terminal", "--json"),
     "terminal read": ("--terminal", "--cursor", "--limit", "--screen", "--json"),
     "terminal send": ("--terminal", "--text", "--enter", "--json"),
-    "orchestration gate-list": ("--task", "--from", "--json"),
+}
+REQUIRED = {**SLACK_COMMANDS,
+            "automations create": ("--name", "--trigger", "--prompt", "--provider",
+                                   "--workspace", "--disabled", "--json")}
+INTAKE_READ = {"repo list": ("--json",)}
+INTAKE_APPLY = {
+    **INTAKE_READ,
+    **SLACK_COMMANDS,
+    "worktree list": ("--repo", "--limit", "--json"),
+    "worktree create": ("--repo", "--name", "--no-parent", "--base-branch", "--setup", "--json"),
+    "agent launch": ("--agent", "--worktree", "--surface", "--prompt", "--json"),
+    "terminal list": ("--worktree", "--json"),
+    "terminal wait": ("--terminal", "--for", "--timeout-ms", "--json"),
+    "terminal send": (*SLACK_COMMANDS["terminal send"], "--wait-submit"),
+    "orchestration run-create": ("--objective", "--from", "--full", "--json"),
+    "orchestration run-list": ("--limit", "--full", "--json"),
+    "orchestration run-show": ("--id", "--full", "--json"),
+    "orchestration run-use": ("--id", "--from", "--json"),
+}
+INTAKE_CLOSE = {
+    "terminal close": ("--terminal", "--json"),
     "orchestration task-list": ("--run", "--json"),
-    "orchestration worker-list": ("--run", "--json"),
-    "orchestration dispatch-show": ("--task", "--from", "--json"),
-    "orchestration gate-resolve": ("--id", "--resolution", "--from", "--json"),
-    "orchestration task-update": ("--id", "--status", "--result", "--run", "--from", "--json"),
+}
+INTAKE_WORKERS = {
+    "worktree create": (*INTAKE_APPLY["worktree create"], "--reference"),
+    "orchestration task-list": ("--run", "--from", "--json"),
+    "orchestration task-create": ("--run", "--from", "--task-title", "--spec", "--json"),
+    "orchestration worker-start": ("--task", "--run", "--from", "--worktree",
+                                   "--terminal", "--timeout-ms", "--json"),
+    "orchestration dispatch-show": ("--task", "--from", "--full", "--json"),
+    "orchestration worker-show": ("--dispatch", "--full", "--json"),
 }
 
 
-def check(c, runner=run):
+def intake_commands(*, apply, auto_close=False, workers=False):
+    if not apply:
+        return INTAKE_READ
+    return {**INTAKE_APPLY, **(INTAKE_CLOSE if auto_close else {}),
+            **(INTAKE_WORKERS if workers else {})}
+
+
+def check(c, runner=run, *, commands=REQUIRED, include_guides=True):
     exe = orca_executable(c)
     version = runner([exe, "--version"]).strip()
     # A non-Orca executable must not accidentally pass general --help discovery.
     root = runner([exe, "--help"])
-    if not all(word in root.lower() for word in ("orca", "automations", "orchestration")):
+    if not re.search(r"\borca\b", root, re.I):
         raise BridgeError("selected_executable_is_not_supported_orca")
     guides = {}
-    for skill in ("orca-cli", "orchestration"):
+    for skill in ("orca-cli", "orchestration") if include_guides else ():
         try:
             output = runner([exe, "skills", "get", skill, "--json"])
             guides[skill] = '"markdown"' in output
         except BridgeError:
             guides[skill] = False
     results = {}
-    for command, flags in REQUIRED.items():
+    for command, flags in commands.items():
         try:
             help_text = runner([exe, *command.split(), "--help"])
             # Require actual option lines, not an incidental mention in examples or errors.

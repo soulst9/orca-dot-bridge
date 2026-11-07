@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 from orca_dot_bridge.core import BridgeError
-from orca_dot_bridge.intake import (Coordinator, eligible, has_queued_work, locked_state,
+from orca_dot_bridge.intake import (Coordinator, eligible, execute, has_queued_work, locked_state,
                                     setup_session_mode, sync_intake)
 from orca_dot_bridge.workflow import draft_pr, task_spec, work_issue
 
@@ -29,12 +29,19 @@ class SessionSetupTests(unittest.TestCase):
         self.path.write_text(json.dumps(self.config))
 
     def test_enter_defaults_to_on_demand_for_new_setting(self):
-        self.config.pop("coordinator_auto_close")
         self.write()
         with patch("orca_dot_bridge.intake.sys.stdin.isatty", return_value=True), patch("builtins.input", return_value=""):
             result = setup_session_mode(self.path)
         self.assertEqual(result["session_mode"], "on-demand")
         self.assertTrue(json.loads(self.path.read_text())["coordinator_auto_close"])
+
+    def test_legacy_missing_auto_close_preserves_persistent_runtime(self):
+        self.config.pop("coordinator_auto_close")
+        self.write()
+        with patch("orca_dot_bridge.intake.sys.stdin.isatty", return_value=True), patch("builtins.input", return_value=""):
+            result = setup_session_mode(self.path)
+        self.assertEqual(result["session_mode"], "persistent")
+        self.assertFalse(json.loads(self.path.read_text())["coordinator_auto_close"])
 
     def test_persistent_updates_only_session_setting(self):
         self.write()
@@ -66,6 +73,25 @@ class IntakeTests(unittest.TestCase):
         self.config = {"project_id": "project", "ready_status": "할 것", "received_status": "하는 중",
                        "intake_label": "orca-intake", "issue_allowlist": [25], "batch_enabled": False}
         self.github = Mock()
+
+    def test_incompatible_worker_cli_fails_before_constructing_clients(self):
+        args = Mock(doctor=False, apply=True, issue=[25], workers=True)
+        config = dict(self.config, worker_mode="read_only", coordinator_auto_close=True)
+        with patch("orca_dot_bridge.intake.load", return_value=config), \
+                patch("orca_dot_bridge.intake.check", return_value={
+                    "compatible": False, "commands": {"orchestration worker-start": {"supported": False}}}) as probe, \
+                patch("orca_dot_bridge.intake.GitHub") as github, \
+                patch("orca_dot_bridge.intake.Coordinator") as orca:
+            with self.assertRaisesRegex(BridgeError, "orca_cli_incompatible:github_intake:orchestration worker-start"):
+                execute(args, "config.json")
+        commands = probe.call_args.kwargs["commands"]
+        self.assertIn("--wait-submit", commands["terminal send"])
+        self.assertIn("terminal close", commands)
+        self.assertIn("orchestration worker-show", commands)
+        self.assertNotIn("orchestration gate-resolve", commands)
+        self.assertNotIn("orchestration task-update", commands)
+        github.assert_not_called()
+        orca.assert_not_called()
 
     def test_canary_is_explicit_and_batch_needs_label(self):
         self.assertTrue(eligible(self.config, self.github, item(), True))

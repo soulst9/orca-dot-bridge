@@ -16,7 +16,7 @@
     "bridge_user_id": "${SLACK_BRIDGE_USER_ID}",
     "bridge_bot_id": "${SLACK_BRIDGE_BOT_ID}",
     "dot_user_id": "${SLACK_DOT_USER_ID}",
-    "dot_bot_id": "${SLACK_DOT_BOT_ID}",
+    "dot_bot_id": "",
     "approver_ids": ["${SLACK_APPROVER_ID}"],
     "keychain_account": "${KEYCHAIN_ACCOUNT}",
     "writer_service": "${SLACK_WRITER_KEYCHAIN_SERVICE}",

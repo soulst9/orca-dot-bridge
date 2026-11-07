@@ -12,6 +12,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from .core import BridgeError, orca_executable, run, strict_json
+from .compat import check, intake_commands
 
 SESSION_MODES = {"on-demand": True, "persistent": False}
 
@@ -98,7 +99,7 @@ def setup_session_mode(config_path, mode=None):
     if mode is None:
         if not sys.stdin.isatty():
             raise BridgeError("session_mode_selection_requires_a_terminal_or_--session-mode")
-        default = "1" if config.get("coordinator_auto_close", True) else "2"
+        default = "1" if config.get("coordinator_auto_close", False) else "2"
         prompt = (
             "관리자 세션 방식\n"
             "  1. 필요할 때 열기 — 대기열이 비고 GitHub 반영이 끝나면 닫기\n"
@@ -618,8 +619,8 @@ def sync_intake(c, gh, state, item, entry):
                 return "project_status_changed"
             begin(state, entry, "comment")
             comment_url = gh.comment(issue["number"], marker + "\n"
-                                     "Orca Coordinator가 이 이슈를 읽기 전용으로 접수했습니다. "
-                                     "구현 작업은 별도 승인 절차를 따릅니다.")
+                                     "The Orca coordinator acknowledged this issue in read-only mode. "
+                                     "Implementation requires separate approval.")
         entry["comment_url"] = comment_url
         state.save()
     current = gh.current(item["id"], issue["id"])
@@ -646,13 +647,21 @@ def execute(args, config_path):
         raise BridgeError("intake_workers_disabled")
     if args.apply and not args.issue and not c["batch_enabled"]:
         raise BridgeError("intake_batch_disabled")
+    commands = intake_commands(apply=args.apply or args.doctor,
+                               auto_close=c.get("coordinator_auto_close", False),
+                               workers=args.workers or (args.doctor and c.get("worker_mode") == "read_only"))
+    compatibility = check(c, commands=commands, include_guides=args.doctor)
+    if not compatibility["compatible"]:
+        missing = [name for name, result in compatibility["commands"].items() if not result["supported"]]
+        raise BridgeError("orca_cli_incompatible:github_intake:" + ",".join(missing))
     gh, orca = GitHub(c), Coordinator(c)
     login = gh.identity()
     board = gh.board()
     orca.verify_repo()
     if args.doctor:
         return {"ok": True, "github_login": login, "project": board["url"],
-                "project_can_update": board["viewerCanUpdate"], "orca_repo": orca.repo}
+                "project_can_update": board["viewerCanUpdate"], "orca_repo": orca.repo,
+                "orca_compatibility": compatibility}
     if args.apply and not board["viewerCanUpdate"]:
         raise BridgeError("github_project_write_access_required")
     requested = {number: index for index, number in enumerate(args.issue or [])}

@@ -25,7 +25,11 @@ cp -n github-intake.example.json github-intake.json
 - **1. 필요할 때 열기**는 새 설치의 기본값이다. 대기열이 비고 GitHub 반영이 끝나면 세션을 닫는다. 다음 접수에는 같은 Worktree와 Run에 새 세션을 연결한다.
 - **2. 같은 세션 유지**는 대기열이 비어도 관리자 세션을 계속 열어 둔다.
 
-설정이 이미 있으면 같은 명령으로 선택을 바꿀 수 있다. Enter는 현재 값을 유지한다. 터미널 입력이 없는 설치에서는 `github-intake-setup --session-mode on-demand` 또는 `github-intake-setup --session-mode persistent`를 실행한다. 선택은 `coordinator_auto_close`에 저장되고 다음 접수 회차부터 적용된다.
+설정이 이미 있으면 같은 명령으로 선택을 바꿀 수 있다. Enter는 현재 값을 유지한다.
+`coordinator_auto_close`가 없는 이전 설정은 런타임과 설정 화면에서 모두 같은 세션 유지로 처리한다.
+터미널 입력이 없는 설치에서는 `github-intake-setup --session-mode on-demand` 또는
+`github-intake-setup --session-mode persistent`를 실행한다. 선택은 `coordinator_auto_close`에
+저장되고 다음 접수 회차부터 적용된다.
 
 설정 파일에 식별자와 보드의 Status 이름을 채운다. 프로젝트 ID는 `gh project view NUMBER --owner OWNER --format json`, Orca 저장소 ID는 `orca repo list --json`으로 확인한다. CLI와 Orca가 실행되는 동일한 Mac 계정에서 `gh auth status`로 로그인과 Projects 접근 권한을 확인한다. 다른 위치의 설정을 쓸 때는 하위 명령 앞에 `--config /absolute/path.json`을 넣는다.
 
@@ -37,6 +41,9 @@ cp -n github-intake.example.json github-intake.json
 ```
 
 `--apply`를 빼면 읽기 전용이다. `awaiting_coordinator_ack`나 `worker_running`이면 다음 실행이 동일한 요청을 이어받는다. 예제 설정은 `Todo` 상태의 이슈를 접수해 `In Progress`로 이동한다. 읽기 전용 Worker가 끝나면 결과 코멘트를 남긴다. 구현이나 앱 빌드가 끝난 것으로 표시하지 않는다.
+
+브리지는 GitHub와 Orca 연결을 열기 전에 해당 실행 경로의 Orca CLI 옵션을 검사한다.
+`--doctor`는 현재 설정에서 사용할 적용·종료·Worker 명령까지 확인한다.
 
 예제의 이슈 번호는 자신의 테스트 이슈 번호로 바꾼다. 테스트 이슈를 여러 건 지정하려면 `--issue`를 반복하고 매 회차 같은 목록을 전달한다. `coordinator_auto_close`가 켜져 있으면 매 회차 GitHub 보드를 다시 읽어 접수 가능한 이슈가 남았는지 확인한다. 다음 접수 대상이 있으면 CLI는 `coordinator_session: queued`를 반환하고 기존 세션을 유지한다. 진행 중인 요청과 GitHub 반영이 모두 끝나면 해당 관리자 세션만 닫고 `coordinator_session: closed`를 반환한다. Worktree, Run, 처리 기록은 다음 요청에서도 사용한다. 새 세션의 대화 맥락은 별도로 시작한다.
 
@@ -57,3 +64,24 @@ cp -n github-intake.example.json github-intake.json
 - 관리자의 Orca 핸들이 달라졌다면 기록된 동일 pane을 먼저 찾는다. 조회 범위가 해당 실행 호스트를 포함하고 이전 pane이 사라졌음이 확인되면 전용 Worktree에 새 세션을 열고 기존 Run을 이어받는다. 이전 세션에서 읽기 전용 응답을 받지 못했다면 새 토큰으로 수신 확인만 다시 요청한다. 외부 작업의 결과를 확인할 수 없으면 중단하고 상태 파일을 보존한다. Orca 자체 재시작은 운영 Run에 영향을 줄 수 있어 검증 절차에 포함하지 않았다.
 - Projects 상태를 갱신하기 직전에 이슈와 현재 상태를 재조회한다. GitHub API에는 상태 비교와 쓰기를 묶는 조건부 연산이 없어 그 순간 보드에서 동시에 발생한 변경까지 원자적으로 보호할 수는 없다.
 - 상태에는 GitHub 이슈, 보드 항목, Orca 리소스 ID와 처리 영수증이 저장된다. 토큰과 이슈 본문을 저장하지 않는다. 수신 확인에 쓰는 난수는 로컬 상태에만 기록한다.
+
+### 시작 결과를 잃은 관리자 세션 복구
+
+`bridge_terminal_unavailable:restore_recorded_pane`이 나오면 해당 브리지의 예약 실행을
+멈추고 상태 파일의 `coordinator.worktree`, `coordinator.handle`, `coordinator.pane`을 읽는다.
+같은 Orca 호스트에서 `orca terminal list --worktree id:WORKTREE --json`으로 그 전용
+Worktree만 검사한다. 이미 기록된 pane이 있으면 그 세션을 복구하고 다시 실행한다.
+
+`launch`는 있는데 handle과 pane이 없다면 시작 요청의 결과부터 확인한다. 원래 명령의
+`operationId`가 있으면 Orca CLI의 `--retry-launch`로 같은 명령을 재조회한다. 이미 시작된
+관리자가 하나 있으면 다음 접수 회차가 해당 세션을 확인해 연결한다. 실행이 발생하지 않았고
+나중에 실행될 요청도 없다는 사실을 확인한 경우에만 아래처럼 같은 전용 Worktree에서
+설정의 관리자 종류로 터미널을 하나 시작한 뒤 접수를 재실행한다.
+
+```sh
+orca agent launch --agent AGENT --worktree id:WORKTREE --surface terminal --json
+```
+
+연결할 세션은 기존 터미널 목록에 없던 관리자 하나로 확인돼야 한다. 결과가 불명확하거나
+후보가 여러 개면 Orca의 시작 기록을 대조한 뒤 재개한다. 같은 복구 방식은 시작 기록을
+잃었지만 아직 배정하지 않은 전용 Worker Worktree에도 적용한다.
