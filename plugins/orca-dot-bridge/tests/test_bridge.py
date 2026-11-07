@@ -542,6 +542,19 @@ class CompatAndOrcaTests(unittest.TestCase):
             self.assertEqual(main(["validate-config"]), 2)
         self.assertEqual(json.loads(stdout.getvalue())["error"], "safe_error")
 
+    def test_cli_returns_json_for_non_object_slack_state(self):
+        state_path = Path(self.c["state_file"])
+        state_path.write_text("[]")
+        state_path.chmod(0o600)
+        config_path = state_path.with_name("config.yaml")
+        config_path.write_text(json.dumps(self.c))
+        with patch("orca_dot_bridge.cli.check", return_value={"compatible": True}), \
+                patch("sys.stdout", new_callable=io.StringIO) as stdout:
+            self.assertEqual(main(["--config", str(config_path), "doctor"]), 2)
+        self.assertEqual(json.loads(stdout.getvalue()), {
+            "ok": False, "error": "state_invalid:manual_reconciliation_required"})
+        self.assertEqual(state_path.read_text(), "[]")
+
     def test_keychain_password_is_not_a_command_argument(self):
         with patch("orca_dot_bridge.cli.load_config", return_value=self.c), \
              patch("orca_dot_bridge.cli.sys.platform", "darwin"), \

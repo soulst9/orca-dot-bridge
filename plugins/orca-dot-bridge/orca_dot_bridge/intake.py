@@ -134,7 +134,10 @@ class State:
             if not path.is_file() or path.stat().st_mode & 0o077:
                 raise BridgeError("intake_state_permissions_must_be_private")
             self.data = strict_json(path.read_text())
-            if self.data["version"] != 1 or self.data["identity"] != identity:
+            if (not isinstance(self.data, dict) or not isinstance(self.data.get("coordinator"), dict)
+                    or not isinstance(self.data.get("issues"), dict)):
+                raise BridgeError("intake_state_invalid:manual_reconciliation_required")
+            if self.data.get("version") != 1 or self.data.get("identity") != identity:
                 raise BridgeError("intake_state_binding_changed")
         else:
             self.data = {"version": 1, "identity": identity, "coordinator": {}, "issues": {}}
@@ -299,13 +302,19 @@ class Coordinator:
         self.repo = "id:" + c["orca_repo_id"]
 
     def command(self, *args, timeout=45):
+        command = "/".join(args[:2])
         try:
             response = strict_json(self.runner([self.exe, *args, "--json"], timeout=timeout))
         except BridgeError as error:
-            raise BridgeError("orca_intake_command_failed:" + "/".join(args[:2]) + ":" + str(error)) from None
+            raise BridgeError("orca_intake_command_failed:" + command + ":" + str(error)) from None
+        if not isinstance(response, dict):
+            raise BridgeError("orca_intake_response_invalid:" + command)
         if response.get("ok") is not True:
-            raise BridgeError("orca_intake_command_failed:" + "/".join(args[:2]))
-        return response["result"]
+            raise BridgeError("orca_intake_command_failed:" + command)
+        result = response.get("result")
+        if not isinstance(result, dict):
+            raise BridgeError("orca_intake_response_invalid:" + command)
+        return result
 
     def verify_repo(self):
         rows = self.command("repo", "list")["repos"]

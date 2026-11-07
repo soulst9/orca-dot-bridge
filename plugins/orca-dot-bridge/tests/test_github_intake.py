@@ -1,9 +1,11 @@
+import io
 import json
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
 
+from orca_dot_bridge.cli import main
 from orca_dot_bridge.core import BridgeError
 from orca_dot_bridge.intake import (Coordinator, eligible, execute, has_queued_work, locked_state,
                                     setup_session_mode, sync_intake)
@@ -92,6 +94,35 @@ class IntakeTests(unittest.TestCase):
         self.assertNotIn("orchestration task-update", commands)
         github.assert_not_called()
         orca.assert_not_called()
+
+    def test_cli_returns_json_for_non_object_orca_response(self):
+        config = dict(self.config, orca={"executable": "/usr/local/bin/orca"}, orca_repo_id="test-repo")
+        for response in ([], {"ok": True, "result": []}):
+            with self.subTest(response=response):
+                coordinator = Coordinator(config, runner=Mock(return_value=json.dumps(response)))
+                with patch("orca_dot_bridge.intake.load", return_value=config), \
+                        patch("orca_dot_bridge.intake.check", return_value={"compatible": True}), \
+                        patch("orca_dot_bridge.intake.GitHub"), \
+                        patch("orca_dot_bridge.intake.Coordinator", return_value=coordinator), \
+                        patch("sys.stdout", new_callable=io.StringIO) as stdout:
+                    self.assertEqual(main(["github-intake", "--doctor"]), 2)
+                self.assertEqual(json.loads(stdout.getvalue()), {
+                    "ok": False, "error": "orca_intake_response_invalid:repo/list"})
+
+    def test_intake_rejects_invalid_state_containers_without_rewriting(self):
+        identity = ["test-project"]
+        invalid = ([], {"version": 1, "identity": identity, "coordinator": [], "issues": {}})
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "state.json"
+            for payload in invalid:
+                with self.subTest(payload=payload):
+                    content = json.dumps(payload)
+                    path.write_text(content)
+                    path.chmod(0o600)
+                    with self.assertRaisesRegex(BridgeError, "intake_state_invalid"):
+                        with locked_state(path, identity):
+                            self.fail("invalid state was accepted")
+                    self.assertEqual(path.read_text(), content)
 
     def test_canary_is_explicit_and_batch_needs_label(self):
         self.assertTrue(eligible(self.config, self.github, item(), True))

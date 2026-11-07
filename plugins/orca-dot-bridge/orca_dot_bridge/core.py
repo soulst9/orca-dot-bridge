@@ -381,7 +381,8 @@ class Journal:
                 self.data = strict_json(self.path.read_text())
             except OSError:
                 raise BridgeError("state_unreadable") from None
-            if self.data.get("schema_version") != 1 or not isinstance(self.data.get("effects"), dict):
+            if (not isinstance(self.data, dict) or self.data.get("schema_version") != 1
+                    or not isinstance(self.data.get("effects"), dict)):
                 raise BridgeError("state_invalid:manual_reconciliation_required")
         else:
             self.data = {"schema_version": 1, "effects": {}}
